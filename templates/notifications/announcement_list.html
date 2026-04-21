@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Announcements{% endblock %}
+{% block content %}
+<div class="row mb-3"><div class="col"><h2>Announcements</h2></div><div class="col-auto"><a href="{% url 'announcement_create' %}" class="btn btn-primary">Create</a></div></div>
+<div class="card">
+    <div class="card-body">
+        {% for announcement in announcements %}
+        <div class="border-bottom mb-3 pb-3">
+            <h5>{{ announcement.title }}</h5>
+            <p>{{ announcement.message }}</p>
+            <small class="text-muted">{{ announcement.priority }} - {{ announcement.publish_date }}</small>
+        </div>
+        {% empty %}<p>No announcements.</p>{% endfor %}
+    </div>
+</div>
+{% endblock %}

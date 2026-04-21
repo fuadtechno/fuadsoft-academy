@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Add Results - {{ exam.name }}{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">Add Results for {{ exam.name }}</div>
+    <div class="card-body">
+        <form method="post" class="row g-3">{% csrf_token %}
+            <div class="col-md-4"><select name="student_id" class="form-select">{% for s in students %}<option value="{{ s.id }}">{{ s.user.get_full_name }} ({{ s.student_id }})</option>{% endfor %}</select></div>
+            <div class="col-md-2"><input type="number" name="marks" class="form-control" placeholder="Marks"></div>
+            <div class="col-md-3"><input type="text" name="remarks" class="form-control" placeholder="Remarks"></div>
+            <div class="col-auto"><button type="submit" class="btn btn-primary">Add</button></div>
+        </form>
+        <table class="table mt-3"><thead><tr><th>Student</th><th>Marks</th><th>Grade</th></tr></thead><tbody>{% for r in results %}<tr><td>{{ r.student.user.get_full_name }}</td><td>{{ r.marks_obtained }}</td><td>{{ r.grade }}</td></tr>{% endfor %}</tbody></table>
+    </div>
+</div>
+{% endblock %}

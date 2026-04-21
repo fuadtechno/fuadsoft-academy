@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Sections{% endblock %}
+{% block content %}
+<div class="row mb-3"><div class="col"><h2>Sections</h2></div><div class="col-auto"><a href="{% url 'section_create' %}" class="btn btn-primary">Add Section</a></div></div>
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <thead><tr><th>Class</th><th>Name</th><th>Capacity</th></tr></thead>
+            <tbody>{% for section in sections %}<tr><td>{{ section.class_enrolled.name }}</td><td>{{ section.name }}</td><td>{{ section.capacity }}</td></tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Mark Attendance{% endblock %}
+
+{% block extra_css %}
+<style>
+    body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+    .glass-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+    .section-title { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #0891b2; border-bottom: 2px solid #cffafe; margin-bottom: 1rem; padding-bottom: 0.5rem; }
+    .form-control, .form-select, input { border: 2px solid #e5e7eb; border-radius: 10px; padding: 0.75rem; }
+    .form-control:focus, input:focus { outline: none; border-color: #0891b2; box-shadow: 0 0 0 4px rgba(8,145,178,0.1); }
+    .btn-gradient { background: linear-gradient(45deg, #0891b2, #06b6d4); border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 600; }
+    .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(8,145,178,0.3); }
+    .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; }
+    .checkbox-item { padding: 0.5rem; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .checkbox-item.present { background: #d1fae5; color: #065f46; }
+    .checkbox-item.absent { background: #fee2e2; color: #991b1b; }
+    .checkbox-item.late { background: #fef3c7; color: #92400e; }
+    .checkbox-item.selected { ring: 3px solid #0891b2; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="glass-card">
+                <h3 class="mb-4"><i class="bi bi-calendar-check me-2 text-info"></i>Mark Attendance</h3>
+                <form method="post">{% csrf_token %}
+                    <div class="section-title"><i class="bi bi-building me-2"></i>Class & Date</div>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Select Class</label>
+                            <select name="class_id" class="form-select" required>
+                                <option value="">Choose Class</option>
+                                {% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                    <div class="section-title"><i class="bi bi-people me-2"></i>Student Attendance</div>
+                    <div class="checkbox-grid mb-4">
+                        {% for student in students %}
+                        <div class="checkbox-item present">
+                            <input type="checkbox" name="present" value="{{ student.id }}">
+                            <div class="mt-1 small">{{ student.user.first_name }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-gradient text-white flex-grow-1">
+                            <i class="bi bi-check-circle me-2"></i>Save Attendance
+                        </button>
+                        <a href="{% url 'attendance_report' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

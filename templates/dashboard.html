@@ -1,0 +1,368 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - {% if request.tenant %}{{ request.tenant.name }}{% else %}SmartSchool Pro{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.15);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+    
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .kpi-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    .kpi-card.green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .kpi-card.blue { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); }
+    .kpi-card.pink { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    
+    .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .chart-container {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .activity-table {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+    
+    .activity-table tbody tr {
+        background: rgba(255, 255, 255, 0.6);
+        transition: all 0.2s ease;
+    }
+    
+    .activity-table tbody tr:hover {
+        background: #fff;
+        transform: translateX(4px);
+    }
+    
+    .activity-table tbody tr td:first-child { border-radius: 8px 0 0 8px; }
+    .activity-table tbody tr td:last-child { border-radius: 0 8px 8px 0; }
+    
+    @media (max-width: 768px) {
+        .kpi-card { margin-bottom: 1rem; }
+    }
+
+    .dashboard-container {
+        max-height: calc(100vh - 100px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chart-wrapper {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .dashboard-content {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .chart-canvas-container {
+        position: relative;
+        height: 100%;
+        min-height: 300px;
+        max-height: 60vh;
+    }
+
+    @media (max-width: 768px) {
+        .chart-canvas-container {
+            max-height: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Dashboard</h2>
+        <div class="d-flex gap-2">
+            <a href="{% url 'export_students_pdf' %}" class="btn btn-sm btn-primary"><i class="bi bi-file-earmark-pdf me-1"></i>Students PDF</a>
+            <a href="{% url 'export_fees_pdf' %}" class="btn btn-sm btn-success"><i class="bi bi-file-earmark-pdf me-1"></i>Fees PDF</a>
+            <a href="{% url 'export_results_pdf' %}" class="btn btn-sm btn-danger"><i class="bi bi-file-earmark-pdf me-1"></i>Results PDF</a>
+        </div>
+    </div>
+    
+    <!-- KPI Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="kpi-card text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-0 opacity-75">Total Students</p>
+                        <h2 class="mb-0">{{ total_students }}</h2>
+                    </div>
+                    <div class="kpi-icon bg-white bg-opacity-25">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="kpi-card text-white" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-0 opacity-75">Total Teachers</p>
+                        <h2 class="mb-0">{{ total_teachers }}</h2>
+                    </div>
+                    <div class="kpi-icon bg-white bg-opacity-25">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="kpi-card text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-0 opacity-75">Total Classes</p>
+                        <h2 class="mb-0">{{ total_classes }}</h2>
+                    </div>
+                    <div class="kpi-icon bg-white bg-opacity-25">
+                        <i class="bi bi-collection-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="kpi-card text-white" style="background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-0 opacity-75">Total Subjects</p>
+                        <h2 class="mb-0">{{ total_subjects }}</h2>
+                    </div>
+                    <div class="kpi-icon bg-white bg-opacity-25">
+                        <i class="bi bi-book-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance and Revenue Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="kpi-card text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-0 opacity-75">Attendance Today</p>
+                        <h2 class="mb-0">{{ attendance_rate }}%</h2>
+                    </div>
+                    <div class="kpi-icon bg-white bg-opacity-25">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="kpi-card text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-0 opacity-75">Total Revenue</p>
+                        <h2 class="mb-0">${{ revenue|floatformat:0 }}</h2>
+                    </div>
+                    <div class="kpi-icon bg-white bg-opacity-25">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4 dashboard-container">
+        <div class="col-lg-8">
+            <div class="chart-container chart-wrapper">
+                <h5 class="mb-3">Fee Collection Trends</h5>
+                <div class="chart-canvas-container">
+                    <canvas id="feeChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="chart-container chart-wrapper">
+                <h5 class="mb-3">Student Distribution</h5>
+                <div class="chart-canvas-container">
+                    <canvas id="studentChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity & Sidebar -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <h5 class="mb-3">Recent Students</h5>
+                <table class="table activity-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Class</th>
+                            <th>Date Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in recent_students %}
+                        <tr>
+                            <td>{{ student.student_id }}</td>
+                            <td>{{ student.user.get_full_name }}</td>
+                            <td>{{ student.class_enrolled.name|default:"-" }}</td>
+                            <td>{{ student.date_of_admission }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center">No recent students</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="chart-container">
+                <h5 class="mb-3">Upcoming Exams</h5>
+                {% for exam in upcoming_exams %}
+                <div class="border-bottom py-2">
+                    <p class="mb-0 fw-medium">{{ exam.name }}</p>
+                    <small class="text-muted">{{ exam.class_enrolled.name }} - {{ exam.date }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted">No upcoming exams</p>
+                {% endfor %}
+            </div>
+            
+            <div class="chart-container mt-3">
+                <h5 class="mb-3">Announcements</h5>
+                {% for announcement in announcements %}
+                <div class="border-bottom py-2">
+                    <p class="mb-0 fw-medium">{{ announcement.title }}</p>
+                    <small class="text-muted">{{ announcement.message|truncatewords:15 }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted">No announcements</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const monthsData = {{ months_data|safe }};
+    const studentDist = {{ student_distribution|safe }};
+    
+    // Fee Collection Line Chart
+    const feeCtx = document.getElementById('feeChart').getContext('2d');
+    new Chart(feeCtx, {
+        type: 'line',
+        data: {
+            labels: monthsData.map(m => m.month),
+            datasets: [{
+                label: 'Fee Collection',
+                data: monthsData.map(m => m.amount),
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#fff',
+                pointRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }
+            },
+            layout: { padding: 10 }
+        }
+    });
+    
+    // Student Distribution Doughnut Chart
+    const studentCtx = document.getElementById('studentChart').getContext('2d');
+    new Chart(studentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: studentDist.map(d => d[0] || 'No Class'),
+            datasets: [{
+                data: studentDist.map(d => d[1] || 0),
+                backgroundColor: ['#667eea', '#38ef7d', '#00c6ff', '#f5576c', '#f093fb'],
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+</script>
+{% endblock %}
+
+{% block footer %}
+<footer class="bg-[#0f172a] text-white py-6 px-8 mt-auto border-t border-slate-800">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-left">
+            <p class="text-lg font-bold">
+                Developed by <span class="text-blue-400">Fuad Aliyi Mume</span>
+                <span class="mx-2 text-slate-500">|</span>
+                <span class="text-sm font-normal text-slate-400 uppercase tracking-wider">System Developer</span>
+            </p>
+        </div>
+        <div class="text-slate-400 text-sm">
+            &copy; 2026 <span class="font-semibold text-slate-200">FuadSoft Enterprise</span>. All Rights Reserved.
+        </div>
+    </div>
+</footer>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Timetable - {{ class.name }}{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">Timetable for {{ class.name }}</div>
+    <div class="card-body">
+        <table class="table">
+            <thead><tr><th>Day</th><th>Subject</th><th>Time</th><th>Room</th></tr></thead>
+            <tbody>{% for t in timetable %}<tr><td>{{ t.day }}</td><td>{{ t.subject.name }}</td><td>{{ t.start_time }} - {{ t.end_time }}</td><td>{{ t.room }}</td></tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

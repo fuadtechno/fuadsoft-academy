@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}{{ teacher.user.get_full_name }}{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h3>{{ teacher.user.get_full_name }}</h3>
+        <p>ID: {{ teacher.teacher_id }}</p>
+        <p>Qualification: {{ teacher.qualification }}</p>
+        <p>Specialization: {{ teacher.specialization }}</p>
+        <p>Experience: {{ teacher.experience_years }} years</p>
+    </div>
+</div>
+{% endblock %}

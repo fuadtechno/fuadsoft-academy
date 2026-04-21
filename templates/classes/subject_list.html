@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Subjects{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col"><h2>Subjects</h2></div>
+    <div class="col-auto"><a href="{% url 'subject_create' %}" class="btn btn-primary">Add Subject</a></div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <thead><tr><th>Code</th><th>Name</th><th>Description</th></tr></thead>
+            <tbody>{% for subject in subjects %}<tr><td>{{ subject.code }}</td><td>{{ subject.name }}</td><td>{{ subject.description }}</td></tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

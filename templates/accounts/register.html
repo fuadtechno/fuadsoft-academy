@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - {% if request.tenant %}{{ request.tenant.name }}{% else %}SmartSchool Pro{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .register-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    .register-page::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+    }
+    .register-page::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.5;
+    }
+    .register-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border-radius: 16px;
+    }
+    .code-decoration {
+        position: absolute;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: rgba(99, 102, 241, 0.3);
+        white-space: pre;
+        pointer-events: none;
+        user-select: none;
+    }
+    .glow-button {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+    .glow-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+    }
+    .floating-icon {
+        animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-page d-flex align-items-center justify-content-center position-relative py-4">
+    <!-- Code decoration elements -->
+    <div class="code-decoration" style="top: 5%; left: 3%; opacity: 0.3;">class User:<br>&nbsp;&nbsp;def __init__():<br>&nbsp;&nbsp;&nbsp;&nbsp;pass</div>
+    <div class="code-decoration" style="bottom: 15%; right: 5%; opacity: 0.3;">@register<br>def create():<br>&nbsp;&nbsp;return True</div>
+    <div class="code-decoration" style="top: 40%; left: 8%; opacity: 0.2;">user = User()<br>user.save()</div>
+    <div class="code-decoration" style="bottom: 60%; right: 3%; opacity: 0.2;">def __str__():<br>&nbsp;&nbsp;return self.name</div>
+    
+    <div class="container position-relative" style="z-index: 1;">
+        <div class="row justify-content-center">
+            <div class="col-md-7 col-lg-6">
+                <div class="text-center mb-4">
+                    <div class="floating-icon d-inline-block p-3 rounded-circle bg-white bg-opacity-10 mb-3">
+                        <i class="bi bi-person-plus-fill fs-1 text-white"></i>
+                    </div>
+                    <h2 class="text-white fw-bold">{% if request.tenant %}{{ request.tenant.name }}{% else %}SmartSchool Pro{% endif %}</h2>
+                    <p class="text-white-50">Create your account to get started</p>
+                </div>
+                
+                <div class="register-card p-4">
+                    <div class="text-center mb-4">
+                        <h4 class="fw-bold text-dark">Create Account</h4>
+                        <p class="text-muted small">Fill in your details to register</p>
+                    </div>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Username</label>
+                            {{ form.username }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            {{ form.email }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Phone Number</label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Role</label>
+                            {{ form.role }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Password</label>
+                            {{ form.password1 }}
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Confirm Password</label>
+                            {{ form.password2 }}
+                        </div>
+                        <button type="submit" class="btn glow-button text-white w-100 py-2 fw-semibold">
+                            <i class="bi bi-person-plus me-2"></i>Create Account
+                        </button>
+                    </form>
+                    
+                    <hr class="my-4">
+                    <p class="text-center mb-0">
+                        <span class="text-muted">Already have an account?</span>
+                        <a href="{% url 'login' %}" class="text-primary fw-semibold text-decoration-none">
+                            Login here
+                        </a>
+                    </p>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <small class="text-white-50">&copy; 2026 FuadSoft Enterprise</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

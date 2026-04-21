@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}School Management System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        
+        /* Modern Sidebar - Fixed Position */
+        .sidebar { 
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            width: 260px;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        .sidebar:hover { width: 270px; }
+        .sidebar-brand {
+            padding: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar a { 
+            color: #94a3b8; 
+            text-decoration: none; 
+            padding: 12px 20px; 
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            margin: 4px 8px;
+        }
+        .sidebar a:hover { 
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .sidebar a.active {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            color: #fff;
+        }
+        .sidebar i { font-size: 1.25rem; width: 24px; }
+        
+        /* Navbar */
+        .navbar { 
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            z-index: 999;
+        }
+        
+        /* Main Content - Adjusted for sidebar */
+        .main-content {
+            margin-left: 260px;
+            padding: 1.5rem;
+            min-height: 100vh;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 0; display: none; }
+            .navbar { margin-left: 0; width: 100%; }
+            .main-content { margin-left: 0; }
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        /* Form Controls */
+        .form-control, .form-select {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 0.75rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+        }
+        
+        /* Alerts */
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+        
+        /* Table */
+        .table th { font-weight: 600; color: #6b7280; }
+        .table td, .table th { padding: 1rem; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 60px !important; }
+            .sidebar:hover { width: 200px !important; }
+            .sidebar span, .sidebar-brand { display: none; }
+        }
+        
+        .is-invalid { border-color: #dc3545 !important; }
+        
+        /* Footer */
+        footer {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+        @media (max-width: 768px) {
+            footer { margin-left: 0; width: 100%; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated and request.path != '/accounts/login/' and request.path != '/accounts/register/' %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+<div class="container-fluid p-0">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'dashboard' %}">
+                <i class="bi bi-mortarboard-fill text-primary"></i>
+                <span class="fw-bold">{% if request.tenant %}{{ request.tenant.name }}{% else %}SmartSchool Pro{% endif %}</span>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="#" class="position-relative">
+                    <i class="bi bi-bell fs-5"></i>
+                </a>
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center gap-2 text-decoration-none" data-bs-toggle="dropdown">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:36px;height:36px">
+                            {{ user.username.0|upper }}
+                        </div>
+                        <span class="d-none d-md-inline">{{ user.username }}</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="sidebar-brand">
+                    <i class="bi bi-mortarboard-fill me-2"></i>
+                    <span>{% if request.tenant %}{{ request.tenant.name }}{% else %}SmartSchool Pro{% endif %}</span>
+                </div>
+                <div class="pt-3">
+                    <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+                    </a>
+                    <a href="{% url 'student_list' %}" class="{% if 'student' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-people"></i><span>Students</span>
+                    </a>
+                    <a href="{% url 'teacher_list' %}" class="{% if 'teacher' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-person-badge"></i><span>Teachers</span>
+                    </a>
+                    <a href="{% url 'class_list' %}" class="{% if request.resolver_match.url_name == 'class_list' %}active{% endif %}">
+                        <i class="bi bi-book"></i><span>Classes</span>
+                    </a>
+                    <a href="{% url 'subject_list' %}" class="{% if 'subject' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-journal"></i><span>Subjects</span>
+                    </a>
+                    <a href="{% url 'attendance_report' %}" class="{% if 'attendance' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-calendar-check"></i><span>Attendance</span>
+                    </a>
+                    <a href="{% url 'exam_list' %}" class="{% if 'exam' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-clipboard"></i><span>Exams</span>
+                    </a>
+                    <a href="{% url 'fee_structure_list' %}" class="{% if 'fee' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-currency-dollar"></i><span>Fees</span>
+                    </a>
+                    <a href="{% url 'announcement_list' %}" class="{% if 'announcement' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-megaphone"></i><span>Notices</span>
+                    </a>
+                    <a href="{% url 'user_list' %}" class="{% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-gear"></i><span>Settings</span>
+                    </a>
+                </div>
+            </nav>
+            <main class="main-content">
+    {% else %}
+    <main class="container">
+    {% endif %}
+        
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    </div>
+    </div>
+    
+    {% block footer %}{% endblock %}
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
